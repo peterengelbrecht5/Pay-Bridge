@@ -74,7 +74,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createTransaction(insertTransaction: InsertTransaction): Promise<Transaction> {
-    const [transaction] = await db.insert(transactions).values(insertTransaction).returning();
+    const [transaction] = await db.insert(transactions).values({
+      ...insertTransaction,
+      status: insertTransaction.status || 'pending'
+    }).returning();
     return transaction;
   }
 

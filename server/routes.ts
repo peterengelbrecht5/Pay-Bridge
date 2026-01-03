@@ -142,8 +142,6 @@ export async function registerRoutes(
     }
   });
 
-  // Process payment (Simulated)
-  // This endpoint doesn't require API key, it's the "bank" processing the checkout form
   app.post(api.transactions.process.path, async (req, res) => {
     try {
         const transactionId = parseInt(req.params.id);
@@ -153,17 +151,19 @@ export async function registerRoutes(
             return res.status(404).json({ message: "Transaction not found" });
         }
 
-        // Simulate processing logic
-        // For MVP: If amount > 5000 (50.00), it fails randomly. Else success.
-        // Or just make it always success for demo unless card number ends in 0000
+        const { cardNumber, btcAddress } = req.body;
         
-        const { cardNumber } = req.body;
-        const isFailure = cardNumber.endsWith("0000");
-        const newStatus = isFailure ? "failed" : "success";
+        let newStatus = "success";
+        if (transaction.currency === "BTC") {
+          // BTC Simulation: fails if address is "fail"
+          if (btcAddress === "fail") newStatus = "failed";
+        } else {
+          // Card Simulation: fails if ends in 0000
+          if (cardNumber?.endsWith("0000")) newStatus = "failed";
+        }
 
         const updated = await storage.updateTransactionStatus(transactionId, newStatus);
         res.json(updated);
-
     } catch (err) {
         res.status(500).json({ message: "Processing failed" });
     }

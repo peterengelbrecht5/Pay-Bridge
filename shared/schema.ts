@@ -28,11 +28,12 @@ export const apiKeys = pgTable("api_keys", {
 export const transactions = pgTable("transactions", {
   id: serial("id").primaryKey(),
   merchantId: integer("merchant_id").notNull().references(() => merchants.id),
-  amount: integer("amount").notNull(), // stored in cents
+  amount: integer("amount").notNull(), // stored in cents/smallest unit
   currency: text("currency").default("USD").notNull(),
   status: text("status").notNull().default("pending"), // pending, success, failed
   customerEmail: text("customer_email"),
   referenceId: text("reference_id"),
+  paymentMethod: text("payment_method"), // e.g. "card", "btc"
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -65,9 +66,7 @@ export const transactionsRelations = relations(transactions, ({ one }) => ({
 
 export const insertMerchantSchema = createInsertSchema(merchants).omit({ id: true, userId: true, createdAt: true });
 export const insertApiKeySchema = createInsertSchema(apiKeys).omit({ id: true, merchantId: true, keyHash: true, prefix: true, createdAt: true });
-// For transactions, we usually create them via API, but we'll have a schema for the creation request
 export const insertTransactionSchema = createInsertSchema(transactions).omit({ id: true, merchantId: true, createdAt: true, status: true });
-
 
 // === EXPLICIT API CONTRACT TYPES ===
 
@@ -84,7 +83,6 @@ export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
 
 export type CreateMerchantRequest = InsertMerchant;
 export type CreateApiKeyRequest = InsertApiKey;
-// Response for API Key creation needs to return the raw key ONLY ONCE
 export type CreateApiKeyResponse = ApiKey & { rawKey: string };
 
 export type CreateTransactionRequest = {
@@ -96,10 +94,17 @@ export type CreateTransactionRequest = {
 
 export type ProcessPaymentRequest = {
   transactionId: number;
-  cardNumber: string; // Simulated
-  cvv: string; // Simulated
-  expiry: string; // Simulated
+  cardNumber?: string; 
+  cvv?: string;
+  expiry?: string;
+  btcAddress?: string; // For BTC simulation
 };
 
 export type TransactionResponse = Transaction;
 
+// List of supported currencies
+export const SUPPORTED_CURRENCIES = [
+  "USD", "EUR", "GBP", "JPY", "ZAR", "AUD", "CAD", "CNY", "BTC"
+] as const;
+
+export type SupportedCurrency = typeof SUPPORTED_CURRENCIES[number];
