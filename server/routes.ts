@@ -175,21 +175,34 @@ export async function registerRoutes(
       const id = parseInt(req.params.id);
       const transaction = await storage.getTransaction(id);
       if (!transaction) return res.status(404).json({ message: "Transaction not found" });
-      
-      // Don't expose everything, maybe just amount and merchant name? 
-      // Need to fetch merchant name
-      const merchant = await storage.getMerchantByUserId(transaction.merchantId.toString()); // Wait, merchantId in trans is int (merchants.id), not userId.
-      // Need a storage method to get merchant by ID.
-      // Let's just return transaction for now, frontend will display raw data. 
-      // Actually, let's fix the storage method to get merchant by ID if needed, but for MVP speed, 
-      // I'll just skip the merchant name on checkout page or fetch it if I had the relation helper.
-      
-      // I'll update routes to include merchant info if possible, but schema relations are set.
-      // Drizzle query builder can fetch relations. 
-      // `db.query.transactions.findFirst({ where: eq(transactions.id, id), with: { merchant: true } })`
-      // But I am using `storage` abstraction. 
-      // I'll just return transaction.
       res.json(transaction);
+  });
+
+  // Helper route for no-code button to create transaction and redirect
+  app.get('/api/public/transactions/quick', async (req: any, res) => {
+    try {
+      const { apiKey, amount, currency, referenceId, customerEmail } = req.query;
+      
+      if (!apiKey) return res.status(401).json({ message: "Missing API Key" });
+      
+      const keyHash = crypto.createHash('sha256').update(apiKey as string).digest('hex');
+      const merchant = await storage.getMerchantByApiKeyHash(keyHash);
+      
+      if (!merchant) return res.status(401).json({ message: "Invalid API Key" });
+
+      const transaction = await storage.createTransaction({
+        merchantId: merchant.id,
+        amount: parseInt(amount as string),
+        currency: (currency as string) || "USD",
+        customerEmail: (customerEmail as string) || null,
+        referenceId: (referenceId as string) || null,
+        status: 'pending'
+      });
+
+      res.redirect(`/checkout/${transaction.id}`);
+    } catch (err) {
+      res.status(500).json({ message: "Quick transaction failed" });
+    }
   });
 
 
