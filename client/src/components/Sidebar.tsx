@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, CreditCard, Key, Settings, LogOut, Hexagon } from "lucide-react";
+import { LayoutDashboard, CreditCard, Key, Settings, LogOut, Hexagon, FileCode } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 
@@ -11,6 +11,7 @@ export function Sidebar() {
     { href: "/", label: "Dashboard", icon: LayoutDashboard },
     { href: "/transactions", label: "Transactions", icon: CreditCard },
     { href: "/keys", label: "API Keys", icon: Key },
+    { href: "/docs", label: "Documentation", icon: FileCode },
     { href: "/settings", label: "Settings", icon: Settings },
   ];
 

@@ -12,6 +12,7 @@ import Landing from "@/pages/Landing";
 import Dashboard from "@/pages/Dashboard";
 import Transactions from "@/pages/Transactions";
 import ApiKeys from "@/pages/ApiKeys";
+import Docs from "@/pages/Docs";
 import Onboarding from "@/pages/Onboarding";
 import PublicCheckout from "@/pages/PublicCheckout";
 import { Sidebar } from "@/components/Sidebar";
@@ -78,6 +79,11 @@ function Router() {
           <Route path="/keys">
             <PrivateLayout>
               <ApiKeys />
+            </PrivateLayout>
+          </Route>
+          <Route path="/docs">
+            <PrivateLayout>
+              <Docs />
             </PrivateLayout>
           </Route>
           <Route path="/settings">
