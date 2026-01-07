@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useRoute } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { useProcessPayment } from "@/hooks/use-transactions";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -13,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { CreditCard, ShieldCheck, CheckCircle2, XCircle } from "lucide-react";
+import { CreditCard, ShieldCheck, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function PublicCheckout() {
@@ -23,6 +24,16 @@ export default function PublicCheckout() {
   const { mutate: processPayment, isPending } = useProcessPayment();
   const [status, setStatus] = useState<"idle" | "success" | "failed">("idle");
   const { toast } = useToast();
+
+  const { data: transaction, isLoading: isLoadingTransaction } = useQuery({
+    queryKey: ["/api/public/transactions", transactionId],
+    queryFn: async () => {
+      const res = await fetch(`/api/public/transactions/${transactionId}`);
+      if (!res.ok) throw new Error("Transaction not found");
+      return res.json();
+    },
+    enabled: transactionId > 0
+  });
 
   const [formData, setFormData] = useState({
     cardNumber: "",
@@ -107,6 +118,30 @@ export default function PublicCheckout() {
     );
   }
 
+  if (isLoadingTransaction) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!transaction && transactionId > 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md border-0 shadow-xl text-center p-8">
+           <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-6">
+             <XCircle className="w-10 h-10 text-red-600" />
+           </div>
+           <h2 className="text-2xl font-bold text-gray-900 mb-2">Transaction Not Found</h2>
+           <p className="text-gray-500 mb-8">
+             The transaction you are looking for does not exist or has expired.
+           </p>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 font-sans">
       <Card className="w-full max-w-md shadow-2xl overflow-hidden border-0">
@@ -116,8 +151,10 @@ export default function PublicCheckout() {
             <ShieldCheck className="w-5 h-5 opacity-80" />
           </div>
           <div className="mb-1">
-             <span className="text-3xl font-bold tracking-tight">$24.00</span>
-             <span className="text-slate-400 ml-2">USD</span>
+             <span className="text-3xl font-bold tracking-tight">
+               {new Intl.NumberFormat('en-US', { style: 'currency', currency: transaction?.currency || 'USD' }).format((transaction?.amount || 0) / 100)}
+             </span>
+             <span className="text-slate-400 ml-2">{transaction?.currency || 'USD'}</span>
           </div>
           <p className="text-sm text-slate-400">Order #{transactionId}</p>
         </div>

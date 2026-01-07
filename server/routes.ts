@@ -151,6 +151,10 @@ export async function registerRoutes(
             return res.status(404).json({ message: "Transaction not found" });
         }
 
+        if (transaction.status !== 'pending') {
+            return res.status(400).json({ message: "Transaction already processed" });
+        }
+
         const { cardNumber, btcAddress } = req.body;
         
         let newStatus = "success";
