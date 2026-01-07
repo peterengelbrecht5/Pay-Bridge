@@ -173,13 +173,16 @@ export async function registerRoutes(
     }
   });
 
-  // Get transaction details for public checkout page (unsecured for now, or use a signed token in real app)
-  // For MVP, we'll allow fetching by ID to render the page
   app.get('/api/public/transactions/:id', async (req, res) => {
-      const id = parseInt(req.params.id);
-      const transaction = await storage.getTransaction(id);
-      if (!transaction) return res.status(404).json({ message: "Transaction not found" });
-      res.json(transaction);
+      try {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) return res.status(400).json({ message: "Invalid transaction ID" });
+        const transaction = await storage.getTransaction(id);
+        if (!transaction) return res.status(404).json({ message: "Transaction not found" });
+        res.json(transaction);
+      } catch (err) {
+        res.status(500).json({ message: "Internal server error" });
+      }
   });
 
   // Helper route for no-code button to create transaction and redirect
@@ -194,9 +197,14 @@ export async function registerRoutes(
       
       if (!merchant) return res.status(401).json({ message: "Invalid API Key" });
 
+      const amountInt = parseInt(amount as string);
+      if (isNaN(amountInt) || amountInt <= 0) {
+        return res.status(400).json({ message: "Invalid amount" });
+      }
+
       const transaction = await storage.createTransaction({
         merchantId: merchant.id,
-        amount: parseInt(amount as string) || 0,
+        amount: amountInt,
         currency: (currency as string) || "USD",
         customerEmail: (customerEmail as string) || null,
         referenceId: (referenceId as string) || null,

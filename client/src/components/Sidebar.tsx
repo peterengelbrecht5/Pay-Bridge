@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 export function Sidebar() {
   const [location] = useLocation();
   const { logout } = useAuth();
-
+  
   const navItems = [
     { href: "/", label: "Dashboard", icon: LayoutDashboard },
     { href: "/transactions", label: "Transactions", icon: CreditCard },
