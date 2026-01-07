@@ -192,7 +192,7 @@ export async function registerRoutes(
 
       const transaction = await storage.createTransaction({
         merchantId: merchant.id,
-        amount: parseInt(amount as string),
+        amount: parseInt(amount as string) || 0,
         currency: (currency as string) || "USD",
         customerEmail: (customerEmail as string) || null,
         referenceId: (referenceId as string) || null,
