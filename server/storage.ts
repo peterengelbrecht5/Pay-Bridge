@@ -1,4 +1,4 @@
-import { users, type User, type InsertUser, merchants, type Merchant, type InsertMerchant, apiKeys, type ApiKey, type InsertApiKey, transactions, type Transaction, type InsertTransaction } from "@shared/schema";
+import { users, type User, type UpsertUser, merchants, type Merchant, type InsertMerchant, apiKeys, type ApiKey, type InsertApiKey, transactions, type Transaction, type InsertTransaction } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
 import { authStorage, type IAuthStorage } from "./replit_integrations/auth/storage";
@@ -26,7 +26,7 @@ export class DatabaseStorage implements IStorage {
   async getUser(id: string): Promise<User | undefined> {
     return authStorage.getUser(id);
   }
-  async upsertUser(user: any): Promise<User> {
+  async upsertUser(user: UpsertUser): Promise<User> {
     return authStorage.upsertUser(user);
   }
 
@@ -74,10 +74,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createTransaction(insertTransaction: InsertTransaction): Promise<Transaction> {
-    const [transaction] = await db.insert(transactions).values({
-      ...insertTransaction,
-      status: insertTransaction.status || 'pending'
-    }).returning();
+    const [transaction] = await db.insert(transactions).values(insertTransaction).returning();
     return transaction;
   }
 

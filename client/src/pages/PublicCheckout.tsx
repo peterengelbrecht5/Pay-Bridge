@@ -66,10 +66,9 @@ export default function PublicCheckout() {
     );
   };
 
-  // Format card input with spaces
   const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const v = e.target.value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
-    const parts = [];
+    const parts: string[] = [];
     for (let i = 0; i < v.length; i += 4) {
       parts.push(v.substring(i, i + 4));
     }

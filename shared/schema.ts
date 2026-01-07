@@ -64,9 +64,9 @@ export const transactionsRelations = relations(transactions, ({ one }) => ({
 
 // === BASE SCHEMAS ===
 
-export const insertMerchantSchema = createInsertSchema(merchants).omit({ id: true, userId: true, createdAt: true });
-export const insertApiKeySchema = createInsertSchema(apiKeys).omit({ id: true, merchantId: true, keyHash: true, prefix: true, createdAt: true });
-export const insertTransactionSchema = createInsertSchema(transactions).omit({ id: true, merchantId: true, createdAt: true, status: true });
+export const insertMerchantSchema = createInsertSchema(merchants).omit({ id: true, createdAt: true });
+export const insertApiKeySchema = createInsertSchema(apiKeys).omit({ id: true, createdAt: true });
+export const insertTransactionSchema = createInsertSchema(transactions).omit({ id: true, createdAt: true });
 
 // === EXPLICIT API CONTRACT TYPES ===
 

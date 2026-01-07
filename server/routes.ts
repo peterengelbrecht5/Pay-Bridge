@@ -125,7 +125,7 @@ export async function registerRoutes(
     next();
   };
 
-  app.post(api.transactions.create.path, validateApiKey, async (req: any, res) => {
+  app.post(api.transactions.create.path, validateApiKey, async (req: any, res: any) => {
     try {
       const input = api.transactions.create.input.parse(req.body);
       const transaction = await storage.createTransaction({
@@ -134,11 +134,11 @@ export async function registerRoutes(
         status: 'pending'
       });
       res.status(201).json(transaction);
-    } catch (err) {
+    } catch (err: any) {
         if (err instanceof z.ZodError) {
             return res.status(400).json({ message: err.errors[0].message });
         }
-        res.status(500).json({ message: err.message });
+        res.status(500).json({ message: err.message || "Internal server error" });
     }
   });
 
